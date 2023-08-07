@@ -91,3 +91,41 @@ Change the message displayed by hello.py
 - `git stash branch <newbranch> stash@{<n>}` - Создает ветку из сохранения.
 - `git stash drop stash@{<n>}` - Удаляет сохранение.
 - `git stash clear` - Удаляет все сохранения.
+---
+## [.gitignore](https://git-scm.com/docs/gitignore)
+
+- .gitignore паттерны
+
+|Паттерн|Пример совпадения|Объяснение|
+|---|---|---|
+|`**/logs`|`logs/debug.log`  <br>`logs/monday/foo.bar`  <br>`build/logs/debug.log`|Двойная звезда сопоставляет директорий где угодно в репозитории.|
+|`**/logs/debug.log`|`logs/debug.log`  <br>`build/logs/debug.log`  <br>_but not_  <br>`logs/build/debug.log`|Также двойная звезда сопоставляет файлы на основе их имени и имени родителького каталога.|
+|`*.log`|`debug.log`  <br>`foo.log`  <br>`.log`  <br>`logs/debug.log`|Звезда сопоставляет ноль или более символов.|
+|`*.log`  <br>`!important.log`|`debug.log`  <br>`trace.log`  <br>_but not_  <br>`important.log`  <br>`logs/important.log`|Добавление восклицательного знака к паттерну отменяет его. Если файл соответствует паттерну, но также соответствует паттерну отрицания, определенному позже в файле, он не будет проигнорирован.|
+|`*.log`  <br>`!important/*.log`  <br>`trace.*`|`debug.log`  <br>`important/trace.log`  <br>_but not_  <br>`important/debug.log`|Паттерны определённые после отменяющего паттерна будут повторно игнорировать все ранее отмененные файлы.|
+|`/debug.log`|`debug.log`  <br>_but not_  <br>`logs/debug.log`|Добавление слеша сопоставляет только файлы в корне репозитория.|
+|`debug.log`|`debug.log`  <br>`logs/debug.log`|По умолчанию паттерны сопоставляют файлы в любой директории.|
+|`debug?.log`|`debug0.log`  <br>`debugg.log`  <br>_but not_  <br>`debug10.log`|Знак вопроса сопоставляет ровно один знак.|
+|`debug[0-9].log`|`debug0.log`  <br>`debug1.log`  <br>_but not_  <br>`debug10.log`|Квадратный скобки могут также быть использованы для сопоставления одного символа в указанном диапазоне.|
+|`debug[01].log`|`debug0.log`  <br>`debug1.log`  <br>_but not_  <br>`debug2.log`  <br>`debug01.log`|Квадратные скобки сопоставляют единичный символ из указанного списка.|
+|`debug[!01].log`|`debug2.log`  <br>_but not_  <br>`debug0.log`  <br>`debug1.log`  <br>`debug01.log`|Восклицательный знак может быть использован для сопоставления любого символа кроме символа из указанного списка.|
+|`debug[a-z].log`|`debuga.log`  <br>`debugb.log`  <br>_but not_  <br>`debug1.log`|Диапазоны могут быть числовые или буквенные.|
+|`logs`|`logs`  <br>`logs/debug.log`  <br>`logs/latest/foo.bar`  <br>`build/logs`  <br>`build/logs/debug.log`|Если не добавлять слеш, паттерн будет сопоставлять и файлы и содержимое директорий с этим именем, в примере слева и директории и файлы с именем _logs_ проигнорированы.|
+|`logs/`|`logs/debug.log`  <br>`logs/latest/foo.bar`  <br>`build/logs/foo.bar`  <br>`build/logs/latest/debug.log`|Добавление слеша указывает, что паттерн это директория. Всё содержимое любого каталога в репозитории с подходящим именем, включая все содержимые файлы и поддиректории будут проигнорированы.|
+|`logs/`  <br>`!logs/important.log`|`logs/debug.log`  <br>`logs/important.log`|Подождите минутку! Разве `logs/important.log` не должен быть отменен на примере слева?  <br>  <br>Нет! Из-за причуд связанных с производительностью в Git, вы не можете отменить файл который проигнорирован из-за паттерна сопоставляющего директорию.|
+|`logs/**/debug.log`|`logs/debug.log`  <br>`logs/monday/debug.log`  <br>`logs/monday/pm/debug.log`|Двойная звездочка сопоставляет ноль или более директорий.|
+|`logs/*day/debug.log`|`logs/monday/debug.log`  <br>`logs/tuesday/debug.log`  <br>_but not_  <br>`logs/latest/debug.log`|Одиночная звезда также может быть использована в названиях директорий.|
+|`logs/debug.log`|`logs/debug.log`  <br>_but not_  <br>`debug.log`  <br>`build/logs/debug.log`|Паттерны, определяющие файл в определенном каталоге, относятся к корню репозитория. (Вы можете добавить слеш, но это не делает ничего особенного.)|
+
+- С помощью знака `#` можно добавлять комментарии.
+- С помощью знака `\` можно избегать символы используемые в паттернах.
+- Можно создать глобальные правила игнорирования
+```git
+touch ~/.gitignore
+git config --global core.excludesFile ~/.gitignore
+```
+- Если нужно проигнорировать файл, который уже был в коммите ранее, можно использовать команду `git rm --cached <file>`, сам файл удалён не будет.
+- `git add --force <file>` - С помощью этой команды можно добавить проигнорированный файл в коммит.
+- `git check-ignore --verbose <file>` - С помощью этой команды можно увидеть почему игнорируется тот или иной файл.
+  Вывод команды:
+  `<файл содержащий паттерн> : <номер строки паттерна> : <паттерн>    <имя файла>`
